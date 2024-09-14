@@ -70,7 +70,6 @@ async function createWindow() {
 
     win.webContents.on("did-fail-load", () => loadSystem());
 
-
     // require update module
     const updater = require("./update");
     updater(win, ipcMain);
@@ -200,38 +199,39 @@ ipcMain.handle("print-stock", async (event, data) => {
     });
 });
 
-
 // thermal print
 let thermalWindow;
-ipcMain.handle('thermal-print', async (event, data) => {
-
+ipcMain.handle("thermal-print", async (event, data) => {
     thermalWindow = new BrowserWindow({
         width: 300,
         show: false,
         webPreferences: {
             preload: path.join(__dirname, "preload.js"),
         },
-    })
+    });
     thermalWindow.loadFile("assets/thermalPrint.html");
     // thermalWindow.show();
 
     const printOptions = {
         silent: true,
         deviceName: "XP-80C",
-        marginsType: 0
+        marginsType: 0,
     };
     thermalWindow.webContents.on("did-finish-load", async function () {
         await thermalWindow.webContents.send("printDocument", data);
-        setTimeout(function() {
-            thermalWindow.webContents.print(printOptions, (success, errorType) => {
-                if(!success) {
-                    console.log(errorType);
+        setTimeout(function () {
+            thermalWindow.webContents.print(
+                printOptions,
+                (success, errorType) => {
+                    if (!success) {
+                        console.log(errorType);
+                    }
+                    // thermalWindow.close();
                 }
-                thermalWindow.close();
-            });
-        }, 200)
+            );
+        }, 200);
     });
-})
+});
 
 ipcMain.handle("backup", () => {
     return dialog

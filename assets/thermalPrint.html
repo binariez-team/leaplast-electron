@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Print</title>
+        <link
+            rel="stylesheet"
+            href="../node_modules/bootstrap/dist/css/bootstrap.min.css"
+        />
+        <script src="../node_modules/angular/angular.min.js"></script>
+
+        <style>
+            @page {
+                margin: 0;
+                size: 80mm, auto;
+            }
+            body {
+                width: 70mm;
+                margin: 0;
+                padding: 0;
+                font-size: 12px;
+            }
+
+            table {
+                width: 100%;
+                display: table;
+                border-collapse: collapse;
+                border-spacing: 0;
+            }
+
+            table tbody {
+                border-top: 1px solid rgb(0, 0, 0);
+            }
+
+            table th,
+            table td {
+                padding: 2px 2px;
+            }
+
+            table tr {
+                border-bottom: 1px dotted rgb(0, 0, 0);
+                padding: 2px 0;
+                text-align: start;
+            }
+
+            .print-section {
+                width: 100%; /* Ensure receipt content fits the page width */
+                /* padding: 5mm; */
+            }
+        </style>
+    </head>
+    <body ng-app="printApp" ng-controller="printController">
+        <div class="print-section">
+            <!-- title -->
+            <h4 class="text-center">Lea Plast</h4>
+
+            <div>-------------------------------------------------------</div>
+
+            <!-- type and date -->
+            <div class="row d-flex">
+                <div class="col text-start h6">{{ invoice.type }}</div>
+                <div class="col text-end">{{ invoice.order_date }}</div>
+            </div>
+
+            <!-- customer name if exists -->
+            <p ng-show="invoice.customer_name">
+                Billed To: {{ invoice.customer_name }}
+            </p>
+
+            <!-- invoice number -->
+            <h6 class="text-center">
+                Invoice #: <b>{{ invoice.invoice_number }}</b>
+            </h6>
+
+            <div>-------------------------------------------------------</div>
+
+            <!-- invoice items -->
+            <table>
+                <thead>
+                    <tr>
+                        <th width="70%">Description</th>
+                        <th width="15%">Unit</th>
+                        <th width="15%">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="record in invoice.items">
+                        <td>{{ record.quantity }}*{{ record.product_name }}</td>
+                        <td>{{ record.unit_price | currency }}</td>
+                        <td>
+                            {{ (record.unit_price * record.quantity) | currency
+                            }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <br />
+            <!-- invoice total -->
+            <h6 class="text-center">
+                Total: {{ invoice.total_amount | currency }}
+            </h6>
+
+            <br /><br />
+
+            <!-- thank msg -->
+            <p>Thank you for choosing Lea Plast.</p>
+        </div>
+    </body>
+
+    <script>
+        const app = angular.module("printApp", []);
+        app.controller("printController", function ($scope) {
+            window.electron.print((event, data) => {
+                console.log(data);
+                $scope.$digest(($scope.invoice = data));
+                // $scope.$digest(($scope.invoice = data.invoice));
+            });
+        });
+    </script>
+</html>
